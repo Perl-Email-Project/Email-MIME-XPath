@@ -125,7 +125,9 @@ sub address {
 
 sub get_name {
   #my $subname = (caller(0))[3]; warn "$subname from " . $_[0]->__xpath_address;
-  my $name = (split m!/!, (split /;/, $_[0]->content_type)[0])[1];
+  my $name =  (split /;/, $_[0]->content_type)[0];
+  $name =~ tr{/+}{._};
+  $name = (split /\./, $name)[1];
   #my $name = __is_multipart($_[0]) ? 'multi' : 'part';
   #warn "name = $name";
   return $name;

@@ -19,12 +19,12 @@ is @parts, 1, "root has a single child";
 isa_ok $parts[0], 'Email::MIME';
 is $parts[0], $msg, "it's the original message";
 
-(@parts) = $msg->xpath_findnodes('/part');
-is @parts, 0, "no top-level single-part (obviously)";
-
-(@parts) = $msg->xpath_findnodes('//*[@content_type =~ /^text\//]');
+(@parts) = sort { $a->content_type cmp $b->content_type }
+  $msg->xpath_findnodes('//*[@content_type =~ /^text\//]');
 
 is @parts, 2, "two text/ parts";
+is $parts[0]->xpath_get_name, 'html',  'one is html';
+is $parts[1]->xpath_get_name, 'plain', 'one is plain';
 
 my $node = $msg->xpath_findnode('//*[@subject="your face"]');
 isa_ok $node, 'Email::MIME';
