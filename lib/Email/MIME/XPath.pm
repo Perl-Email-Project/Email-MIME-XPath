@@ -339,6 +339,12 @@ trees at once.  Email::MIME::XPath tries to impose a tree structure on relevant
 MIME objects without getting in the way, but there are undoubtedly bugs and
 unexpected behavior that will arise.
 
+=head1 TODO
+
+Some of the XPath supported by Tree::XPathEngine doesn't work yet, in
+particular doing anything with siblings.  Other syntax may work, but in general
+it is not yet thoroughly tested.
+
 =head1 SEE ALSO
 
 L<Tree::XPathEngine>, L<Email::MIME>
