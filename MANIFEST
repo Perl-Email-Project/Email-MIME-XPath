@@ -1,0 +1,7 @@
+./t/lib/Test/EMX.pm
+./t/messages/mixed-alternative
+./t/00-load.t
+./t/basic.t
+./lib/Email/MIME/XPath.pm
+./Makefile.PL
+./MANIFEST
