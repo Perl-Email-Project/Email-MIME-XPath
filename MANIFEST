@@ -5,3 +5,4 @@ t/basic.t
 lib/Email/MIME/XPath.pm
 Makefile.PL
 MANIFEST
+Changes
