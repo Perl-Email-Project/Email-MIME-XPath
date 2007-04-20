@@ -67,6 +67,7 @@ sub matches {
 
 sub findnode {
   my $self = shift;
+  $self->__build_parents;
   my (@nodes) = $self->__xpath_engine->findnodes(@_, $self);
   Carp::croak "findnode found more than one node" if @nodes > 1;
   return $nodes[0];
@@ -92,26 +93,29 @@ sub __is_multipart {
 # the top-level part.
 sub __build_parents {
   my $self = shift;
+  return if $self->__xpath_engine->{__parent};
   my $parent  = $self->__xpath_engine->{__parent}  = {};
   my $address = $self->__xpath_engine->{__address} = {};
   $self->__xpath_engine->{__root} = $self;
   Scalar::Util::weaken($self->__xpath_engine->{__root});
   my $id = 0;
   $address->{$self} = sprintf("%03d", $id++);
-  my @q = $self;
-  while (@q) { 
-    my $part = shift @q;
-    my @subparts = $part->parts;
-    for (@subparts) {
-      $parent->{$_} = $part;
-      Scalar::Util::weaken $parent->{$_};
-      $address->{$_} = sprintf("%03d", $id++);
-      # XXX this will cause collisions if more than one Email::MIME::XPath
-      # shares parts
-      $_->{__xpath_engine} = $self->__xpath_engine;
-      Scalar::Util::weaken $_->{__xpath_engine};
+  if (__is_multipart($self)) {
+    my @q = $self;
+    while (@q) { 
+      my $part = shift @q;
+      my @subparts = $part->parts;
+      for (@subparts) {
+        $parent->{$_} = $part;
+        Scalar::Util::weaken $parent->{$_};
+        $address->{$_} = sprintf("%03d", $id++);
+        # XXX this will cause collisions if more than one Email::MIME::XPath
+        # shares parts
+        $_->{__xpath_engine} = $self->__xpath_engine;
+        Scalar::Util::weaken $_->{__xpath_engine};
+      }
+      push @q, grep { __is_multipart($_) } @subparts;
     }
-    push @q, grep { __is_multipart($_) } @subparts;
   }
 }
 

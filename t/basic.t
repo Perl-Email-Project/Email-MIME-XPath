@@ -35,3 +35,5 @@ isa_ok $node, 'Email::MIME';
 is $msg->xpath_findnode('//*[@address=' . $node->xpath_address . ']'),
   $node, "found node by address";
 
+$msg = message('plain');
+is $msg->xpath_findnode('//plain'), $msg, "single plain part";
