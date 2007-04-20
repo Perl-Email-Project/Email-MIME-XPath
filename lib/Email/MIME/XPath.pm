@@ -3,6 +3,7 @@ use warnings;
 
 package Email::MIME::XPath;
 
+our $VERSION = '0.001';
 use Tree::XPathEngine;
 use Scalar::Util ();
 use Carp ();
@@ -209,6 +210,10 @@ __END__
 =head1 NAME
 
 Email::MIME::XPath - access MIME documents via XPath queries
+
+=head1 VERSION
+
+Version 0.001
 
 =head1 SYNOPSIS
 
