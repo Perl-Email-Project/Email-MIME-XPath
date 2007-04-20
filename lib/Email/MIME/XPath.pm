@@ -96,7 +96,7 @@ sub __build_parents {
   $self->__xpath_engine->{__root} = $self;
   Scalar::Util::weaken($self->__xpath_engine->{__root});
   my $id = 0;
-  $address->{$self} = $id++;
+  $address->{$self} = sprintf("%03d", $id++);
   my @q = $self;
   while (@q) { 
     my $part = shift @q;
@@ -104,7 +104,7 @@ sub __build_parents {
     for (@subparts) {
       $parent->{$_} = $part;
       Scalar::Util::weaken $parent->{$_};
-      $address->{$_} = $id++;
+      $address->{$_} = sprintf("%03d", $id++);
       # XXX this will cause collisions if more than one Email::MIME::XPath
       # shares parts
       $_->{__xpath_engine} = $self->__xpath_engine;
@@ -204,3 +204,194 @@ sub address { return join(":", $_[0]->{node}, $_[0]->{rank} || 0) }
 sub xpath_cmp { $_[0]->address cmp $_[1]->address }
 
 1;
+
+__END__
+=head1 NAME
+
+Email::MIME::XPath - access MIME documents via XPath queries
+
+=head1 SYNOPSIS
+
+  use Email::MIME;
+  use Email::MIME::XPath;
+
+  my $email = Email::MIME->new($data);
+
+  # find just the first text/plain node, no matter how many there are
+  my ($part) = $email->xpath_findnodes('//plain');
+
+  # find the only text/html node, and die if there is more than one
+  $part = $email->xpath_findnode('//html');
+
+  # look for a png by filename
+  $part = $email->xpath_findnode('//png[@filename="image.png"]');
+
+  # retrieve a part by previously-stored address
+  my $address = $part->xpath_address;
+  # ... later ...
+  $part = $email->xpath_findnode(qq{//*[@address="$address"]});
+
+=head1 DESCRIPTION
+
+Dealing with MIME messages can be complicated.  Frequently you want to display
+certain parts of a message, while alluding to (linking, summarizing, whatever)
+other parts in a way that makes them easy to get to later.  Sometimes this can
+go several levels deep, if you're dealing with forwarded messages, bounces, or
+reports of some kind.
+
+It is especially referring back to sub-parts of an arbitrarily deep MIME
+message that is tedious and that this module attempts to make easier.
+
+Most of this module's functionality is provided by
+L<Tree::XPathEngine|Tree::XPathEngine>.  Refer to its documentation for
+details.  In particular, each of these methods is just a wrapper around the
+method of the same name with C<xpath_> removed:
+
+=head3 xpath_findnodes
+
+=head3 xpath_findnodes_as_string
+
+=head3 xpath_findvalue
+
+=head3 xpath_exists
+
+=head3 xpath_matches
+
+=head3 xpath_find
+
+Two other useful methods are made available by Email::MIME::XPath:
+
+=head3 xpath_findnode
+
+This is a wrapper around C<xpath_findnodes> that dies if more than one node is
+matched.
+
+TODO: should this also die if no nodes are found?
+
+=head3 xpath_address
+
+This method returns a per-message unique address for a particular part.  This
+address is also available as the 'address' attribute in XPath queries; see
+L</Attributes>.
+
+=head1 DOM
+
+XPath expects to work on a tree that is DOM-like.  MIME documents are trees,
+and this module fakes up enough structure to make XPath useful.
+
+Elements (MIME parts) are given a C<name> that corresponds to the second part
+of their Content-Type, e.g.
+
+  multipart/mixed = 'mixed'
+  text/plain      = 'plain'
+
+I am open to changing this.  In particular, I would have just used the entire
+Content-Type, but using '/' in names would have been problematic and I didn't
+want to replace it with something else.  Most of names should be unique,
+anyway; I've never seen 'multipart/png' or 'image/html'.  Feel free to
+enlighten me.
+
+=head2 Attributes
+
+=head3 subject
+
+=head3 from
+
+=head3 to
+
+=head3 cc
+
+=head3 content_type
+
+All of these attributes are pulled directly from the headers.
+
+=head3 filename
+
+For parts with a Content-Disposition header, the filename is pulled from it.
+
+=head3 address
+
+This attribute is assigned by Email::MIME::XPath as it crawls through the MIME
+structure (see L</GUTS>).  For any given top-level MIME document, the address
+attribute for each subpart will be stable over time.  If you do your XPath
+queries from somewhere other than the top-level MIME part, the addresses will
+be different and probably not very useful.
+
+Do not depend on any particular value for any particular address; it should
+only be used for temporary reference, not permanent storage.  In particular, it
+may change between versions of Email::MIME::XPath, though such changes will be
+announced ahead of time.  In the future, it may be possible to specify how
+addresses should be assigned on a per-application basis; presumably then they
+could be depended on.
+
+=head1 GUTS
+
+This module does a few odd things to work around unfriendly behavior in
+Email::MIME.  For example, Email::MIME lets MIME parts be used in several
+larger MIME documents at once.  Not only do individual parts not know what
+their parent is, they *can't* know, because a single part could be in multiple
+trees at once.  Email::MIME::XPath tries to impose a tree structure on relevant
+MIME objects without getting in the way, but there are undoubtedly bugs and
+unexpected behavior that will arise.
+
+=head1 SEE ALSO
+
+L<Tree::XPathEngine>, L<Email::MIME>
+
+=head1 AUTHOR
+
+Hans Dieter Pearcey, C<< <hdp at cpan.org> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to
+C<bug-email-mime-xpath at rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Email-MIME-XPath>.
+I will be notified, and then you'll automatically be notified of progress on
+your bug as I make changes.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Email::MIME::XPath
+
+You can also look for information at:
+
+=over 4
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Email-MIME-XPath>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Email-MIME-XPath>
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Email-MIME-XPath>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Email-MIME-XPath>
+
+=back
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Listbox.com, who sponsored the development of this module.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2007 Hans Dieter Pearcey, all rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
+
+
+
+
+
