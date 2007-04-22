@@ -1,5 +1,8 @@
 Revision history for Perl extension Email::MIME::XPath.
 
+0.003   2007-04-21
+        add prereqs to Makefile.PL -- hdp
+
 0.002   2007-04-20
         bugfix for single-part messages -- hdp
 
