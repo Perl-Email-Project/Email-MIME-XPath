@@ -3,7 +3,7 @@ use warnings;
 
 package Email::MIME::XPath;
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 use Tree::XPathEngine;
 use Scalar::Util ();
 use Carp ();
@@ -198,6 +198,12 @@ sub xpath_is_document_node  { 1 }
 sub xpath_is_element_node   { 0 }
 sub xpath_is_attribute_node { 0 }
 
+# my testing doesn't seem to use this, but I've gotten test failures saying
+# that it's necessary.  I'm tempted to simply @ISA = Email::MIME::XPath, but
+# that might have other undesirable ramifications.
+
+sub xpath_cmp { $_[0]->__xpath_address <=> $_[1]->__xpath_address }
+
 package Email::MIME::XPath::Attribute;
 
 sub xpath_get_value    { return $_[0]->{value} }
@@ -219,7 +225,7 @@ Email::MIME::XPath - access MIME documents via XPath queries
 
 =head1 VERSION
 
-Version 0.003
+Version 0.004
 
 =head1 SYNOPSIS
 

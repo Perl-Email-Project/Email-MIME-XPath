@@ -1,5 +1,8 @@
 Revision history for Perl extension Email::MIME::XPath.
 
+0.004   2007-04-23
+        add xpath_cmp to ::Root -- hdp
+
 0.003   2007-04-21
         add prereqs to Makefile.PL -- hdp
 
