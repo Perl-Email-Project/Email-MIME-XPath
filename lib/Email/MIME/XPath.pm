@@ -3,7 +3,7 @@ use warnings;
 
 package Email::MIME::XPath;
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 use Tree::XPathEngine;
 use Scalar::Util ();
 use Carp ();
@@ -129,7 +129,7 @@ sub address {
 
 sub get_name {
   #my $subname = (caller(0))[3]; warn "$subname from " . $_[0]->__xpath_address;
-  my $name =  (split /;/, $_[0]->content_type)[0];
+  my $name =  (split /;/, $_[0]->content_type || 'text/plain')[0];
   $name =~ tr{/+}{._};
   $name = (split /\./, $name)[1];
   #my $name = __is_multipart($_[0]) ? 'multi' : 'part';
@@ -167,7 +167,7 @@ sub get_attributes {
   #my $subname = (caller(0))[3]; warn "$subname from " . $_[0]->__xpath_address;
   my $node = shift;
   my %attr = (
-    content_type => (split /;/, $node->content_type)[0],
+    content_type => (split /;/, $node->content_type || 'text/plain')[0],
     address      => $node->__xpath_address,
     $node->header('Content-Disposition') ? (filename => $node->filename) : (),
     map {
@@ -225,7 +225,7 @@ Email::MIME::XPath - access MIME documents via XPath queries
 
 =head1 VERSION
 
-Version 0.004
+Version 0.005
 
 =head1 SYNOPSIS
 
